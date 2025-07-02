@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """
-Notion Database Entry Script
+Notion Database Entry Script - Backend Utility Only
 
-This script allows you to easily add entries to your Notion database.
-Simply modify the ENTRY_DATA dictionary below with your desired values
-and run the script to add a new entry.
+This script is a backend utility for adding entries to your Notion database.
+It ONLY accepts data via command-line arguments from other scripts.
+Direct/hardcoded data entry is not allowed.
 
-Usage: python add_notion_entry.py
+Usage: 
+  python add_notion_entry.py --title "Title" --category "Category" --date "2025-01-01" --location "Location" --description "Description" [--url "URL"] [--role "Role"]
+
+This script should ONLY be called by other batch scripts. To add entries:
+1. Create a new batch script (e.g., batch_add_your_data.py)
+2. Have that script call this one with the appropriate arguments
 """
 
 import requests
 import json
 import os
+import argparse
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -35,35 +41,26 @@ HEADERS = {
     "Notion-Version": "2022-06-28"
 }
 
-# ============================================
-# MODIFY THIS SECTION FOR EACH NEW ENTRY
-# ============================================
-ENTRY_DATA = {
-    "Name": "Sample Academic Entry", # This is the title of the entry. It should be descriptive and concise. Don't include the year in the title, as it will be added automatically based on the date.  
-    "Description": "This is a sample description for the academic entry", # This is a short description of the entry that expands on the title only when necessary.
-    "Category": "1. Documentation",  # Choose from available options
-    "Location": "Baton Rouge LA",     # This is the location of the item. It should default to Baton Rouge LA.
-    "Role": "Presenter",             # Choose from: Presenter, Organizer, Co-organizer, Guest Critic, Guest Lecture or create a new role if needed.
-    "Date": "2025-01-01",           # Format: YYYY-MM-DD. If the month and day are not specified, it should default to January 1st of the year.
-    "URL": "https://example.com",    # Optional URL
-    "Show Page Contents": False,      # True/False checkbox
-    "Pinned": False,                # True/False checkbox
-    "page_content": [
-        {
-            "type": "paragraph",
-            "text": "This is the main content of the page. You can modify this text." # Content can be added here to further expand on the short description. This should only be used if the description is not sufficient. This should not duplicate the description or title.
-        }
-    ]
-}
-# ============================================
+
+def parse_arguments():
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description='Add an entry to Notion database')
+    parser.add_argument('--title', required=True, help='Title of the entry')
+    parser.add_argument('--category', required=True, help='Category of the entry')
+    parser.add_argument('--date', required=True, help='Date in YYYY-MM-DD format')
+    parser.add_argument('--location', required=True, help='Location of the entry')
+    parser.add_argument('--description', required=True, help='Description of the entry')
+    parser.add_argument('--url', required=False, help='Optional URL')
+    parser.add_argument('--role', required=False, help='Role (PI, Co-PI, Presenter, etc.)')
+    return parser.parse_args()
 
 
-def create_notion_page():
+def create_notion_page(entry_data):
     """Create a new page in the Notion database with the specified data."""
     
     # Build the page content blocks
     children = []
-    for content_item in ENTRY_DATA.get("page_content", []):
+    for content_item in entry_data.get("page_content", []):
         if content_item["type"] == "paragraph":
             children.append({
                 "object": "block",
@@ -116,54 +113,54 @@ def create_notion_page():
         "children": children
     }
     
-    # Add properties based on what's provided in ENTRY_DATA
-    if "Name" in ENTRY_DATA:
+    # Add properties based on what's provided in entry_data
+    if "Name" in entry_data:
         page_data["properties"]["Name"] = {
             "title": [{
-                "text": {"content": ENTRY_DATA["Name"]}
+                "text": {"content": entry_data["Name"]}
             }]
         }
     
-    if "Description" in ENTRY_DATA:
+    if "Description" in entry_data:
         page_data["properties"]["Description"] = {
             "rich_text": [{
-                "text": {"content": ENTRY_DATA["Description"]}
+                "text": {"content": entry_data["Description"]}
             }]
         }
     
-    if "Category" in ENTRY_DATA:
+    if "Category" in entry_data:
         page_data["properties"]["Category"] = {
-            "select": {"name": ENTRY_DATA["Category"]}
+            "select": {"name": entry_data["Category"]}
         }
     
-    if "Location" in ENTRY_DATA:
+    if "Location" in entry_data:
         page_data["properties"]["Location"] = {
-            "select": {"name": ENTRY_DATA["Location"]}
+            "select": {"name": entry_data["Location"]}
         }
     
-    if "Role" in ENTRY_DATA:
+    if "Role" in entry_data:
         page_data["properties"]["Role"] = {
-            "select": {"name": ENTRY_DATA["Role"]}
+            "select": {"name": entry_data["Role"]}
         }
     
-    if "Date" in ENTRY_DATA:
+    if "Date" in entry_data:
         page_data["properties"]["Date"] = {
-            "date": {"start": ENTRY_DATA["Date"]}
+            "date": {"start": entry_data["Date"]}
         }
     
-    if "URL" in ENTRY_DATA:
+    if "URL" in entry_data:
         page_data["properties"]["URL"] = {
-            "url": ENTRY_DATA["URL"]
+            "url": entry_data["URL"]
         }
     
-    if "Show Page Contents" in ENTRY_DATA:
+    if "Show Page Contents" in entry_data:
         page_data["properties"]["Show Page Contents"] = {
-            "checkbox": ENTRY_DATA["Show Page Contents"]
+            "checkbox": entry_data["Show Page Contents"]
         }
     
-    if "Pinned" in ENTRY_DATA:
+    if "Pinned" in entry_data:
         page_data["properties"]["Pinned"] = {
-            "checkbox": ENTRY_DATA["Pinned"]
+            "checkbox": entry_data["Pinned"]
         }
     
     # Make the API request
@@ -180,7 +177,8 @@ def create_notion_page():
         print(f"✅ Successfully created page!")
         print(f"   Page ID: {page_id}")
         print(f"   Page URL: {page_url}")
-        print(f"   Title: {ENTRY_DATA['Name']}")
+        print(f"   Title: {entry_data['Name']}")
+        return True
     else:
         print(f"❌ Error creating page:")
         print(f"   Status Code: {response.status_code}")
@@ -193,16 +191,50 @@ def create_notion_page():
                 print(f"   Error Message: {error_data['message']}")
         except:
             pass
+        return False
 
 
 def main():
     """Main function to run the script."""
-    print("🚀 Adding entry to Notion database...")
-    print(f"   Database ID: {DATABASE_ID}")
-    print(f"   Entry Name: {ENTRY_DATA['Name']}")
-    print()
-    
-    create_notion_page()
+    try:
+        args = parse_arguments()
+        
+        # Build entry data from command-line arguments
+        entry_data = {
+            "Name": args.title,
+            "Description": args.description,
+            "Category": args.category,
+            "Location": args.location,
+            "Date": args.date,
+            "Show Page Contents": False,
+            "Pinned": False,
+            "page_content": []
+        }
+        
+        # Add optional fields
+        if args.url:
+            entry_data["URL"] = args.url
+        if args.role:
+            entry_data["Role"] = args.role
+            
+        print("🚀 Adding entry to Notion database...")
+        print(f"   Database ID: {DATABASE_ID}")
+        print(f"   Entry Name: {entry_data['Name']}")
+        print()
+        
+        create_notion_page(entry_data)
+        
+    except SystemExit as e:
+        # argparse calls sys.exit() when help is displayed or arguments are missing
+        if e.code != 0:  # Only show error for non-help exits
+            print("\n❌ Error: This script requires all required arguments to be provided.")
+            print("This is a backend utility and should only be called by other batch scripts.")
+            print("\nTo add entries to your Notion database:")
+            print("1. Create a new batch script (e.g., batch_add_your_data.py)")
+            print("2. Have that script call this one with the appropriate arguments")
+            print("\nExample:")
+            print('python add_notion_entry.py --title "My Entry" --category "Scholarship" --date "2025-01-01" --location "Baton Rouge LA" --description "My description"')
+        raise
 
 
 if __name__ == "__main__":
