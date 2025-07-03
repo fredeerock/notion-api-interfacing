@@ -14,15 +14,15 @@ Each entry should have the following required fields:
 - title: The title of the entry.
 - category: Category from your Notion database
 - date: Date in YYYY-MM-DD format
-- description: Don't duplicate content from the title as it's show right next to it. This is a short description of the entry that expands on the title only when necessary. It can also complement the title if needed. Commas and other punctuation are allowed in the description. If there's a URL it should be included in the description.
+- description: Don't duplicate content from the title as it's shown right next to it. This is a short description of the entry that expands on the title only when necessary. It can also complement the title if needed. Commas and other punctuation are allowed in the description. If there's a URL it should be included in the description.
 
 Optional fields:
-- url: URL related to the entry
-- location: Location of the item
-- role: Your role (PI, Co-PI, Presenter, etc.)
+- url: URL related to the entry. The URL should be included in the description.
+- location: Location of the item. This should only be a city and state. Locations, including city, state as well as place should also go to the description or title.
+- role: Your role (PI, Co-PI, Presenter, etc.). The role should also be mentioned in the title or description. If it's in the description it should be mentioned at the beginning.
 
 Notes:
-- Don't use commas in the location or role fields as they may cause issues with parsing.
+- Don't use commas in the location or role fields as they may cause issues with parsing. Commas in other places is totally fine.
 """
 
 import subprocess
