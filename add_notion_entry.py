@@ -133,12 +133,12 @@ def create_notion_page(entry_data):
             "select": {"name": entry_data["Category"]}
         }
     
-    if "Location" in entry_data:
+    if "Location" in entry_data and entry_data["Location"]:
         page_data["properties"]["Location"] = {
             "select": {"name": entry_data["Location"]}
         }
     
-    if "Role" in entry_data:
+    if "Role" in entry_data and entry_data["Role"]:
         page_data["properties"]["Role"] = {
             "select": {"name": entry_data["Role"]}
         }

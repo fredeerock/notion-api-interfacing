@@ -14,12 +14,20 @@ Each entry should have the following required fields:
 - title: The title of the entry.
 - category: Category from your Notion database
 - date: Date in YYYY-MM-DD format
-- description: Don't duplicate content from the title as it's shown right next to it. This is a short description of the entry that expands on the title only when necessary. It can also complement the title if needed. Commas and other punctuation are allowed in the description. If there's a URL it should be included in the description.
+- description: **CRITICAL: If a location is mentioned in your original markdown/source material, it MUST be included in the description field.** Don't duplicate content from the title as it's shown right next to it. This is a short description of the entry that expands on the title only when necessary. It can also complement the title if needed. Commas and other punctuation are allowed in the description. If there's a URL it should be included in the description.
 
 Optional fields:
 - url: URL related to the entry. The URL should be included in the description.
-- location: Location of the item. This should only be a city and state. Locations, including city, state as well as place should also go to the description or title.
+- location: Location of the item. This should only be a city and state (e.g., "New York NY"). **IMPORTANT: Even if you fill this field, any location mentioned in your source material MUST ALSO be included in the description field.**
 - role: Your role (PI, Co-PI, Presenter, etc.). The role should also be mentioned in the title or description. If it's in the description it should be mentioned at the beginning.
+
+LOCATION HANDLING RULES:
+1. If your source material mentions a location (city, venue, institution), include it in the description
+2. The location field is supplementary - it should contain just "City State" format
+3. Examples of proper location handling:
+   - Source: "Presented at MoMA in New York"
+   - Description: "Presented at the Museum of Modern Art in New York, NY."
+   - Location field: "New York NY"
 
 Notes:
 - Don't use commas in the location or role fields as they may cause issues with parsing. Commas in other places is totally fine.
@@ -65,21 +73,28 @@ def main():
     # ============================================
     entries = [
         {
-            "title": "Example Entry 1",
+            "title": "Example Conference Presentation",
             "category": "Scholarship",  # Use valid categories from your Notion database
             "date": "2025-01-01",
-            "location": "Baton Rouge LA", # Optional
-            "description": "This is an example entry description",
+            "location": "Baton Rouge LA", # Optional: City State format
+            "description": "Presented research findings at the Louisiana State University conference in Baton Rouge, LA. This presentation focused on digital humanities methodologies.",
             "url": "https://example.com",  # Optional
             "role": "Presenter"  # Optional
         },
         {
-            "title": "Example Entry 2",
+            "title": "Community Art Workshop",
             "category": "Teaching",
             "date": "2025-01-02",
             "location": "New Orleans LA",
-            "description": "Another example entry",
+            "description": "Co-organized community engagement workshop at the New Orleans Museum of Art in New Orleans, LA. Workshop focused on accessible art education practices.",
             # url, location, and role are optional and can be omitted
+        },
+        {
+            "title": "Example Without Location",
+            "category": "Service",
+            "date": "2025-01-03",
+            "location": "",  # Empty if no location
+            "description": "Served as peer reviewer for academic journal. No physical location involved.",
         }
     ]
     # ============================================
